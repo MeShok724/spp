@@ -1,4 +1,4 @@
-import { ProjectCard } from "./projectCard"
+import { ProjectCard } from "./ProjectCard"
 
 export const ProjectList = ({ projects, onProjectClick }) => {
   return (

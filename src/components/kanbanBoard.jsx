@@ -1,6 +1,7 @@
-import { TaskCard } from "./taskCard";
+import { TaskCard } from "./TaskCard";
 
-export const KanbanBoard = ({ tasks, onTaskMove }) => {
+export const KanbanBoard = ({ tasks, onTaskMove, onEdit, onDelete }) => {
+  
   const todoTasks = tasks.filter(task => task.status === 'todo');
   const inProgressTasks = tasks.filter(task => task.status === 'inProgress');
   const doneTasks = tasks.filter(task => task.status === 'done');
@@ -17,7 +18,8 @@ export const KanbanBoard = ({ tasks, onTaskMove }) => {
             </div>
             <div className="card-body">
               {todoTasks.map(task => (
-                <TaskCard key={task.id} task={task} />
+                <TaskCard key={task.id} task={task}
+                  onEdit={onEdit} onDelete={onDelete} />
               ))}
             </div>
           </div>
@@ -31,7 +33,8 @@ export const KanbanBoard = ({ tasks, onTaskMove }) => {
             </div>
             <div className="card-body">
               {inProgressTasks.map(task => (
-                <TaskCard key={task.id} task={task} />
+                <TaskCard key={task.id} task={task}
+                  onEdit={onEdit} onDelete={onDelete} />
               ))}
             </div>
           </div>
@@ -45,7 +48,8 @@ export const KanbanBoard = ({ tasks, onTaskMove }) => {
             </div>
             <div className="card-body">
               {doneTasks.map(task => (
-                <TaskCard key={task.id} task={task} />
+                <TaskCard key={task.id} task={task}
+                  onEdit={onEdit} onDelete={onDelete} />
               ))}
             </div>
           </div>

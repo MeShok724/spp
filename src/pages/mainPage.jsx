@@ -1,7 +1,8 @@
-import { ProjectList } from "../components/projectList";
-import { KanbanBoard } from "../components/kanbanBoard";
+import { ProjectList } from "../components/ProjectList";
+import { KanbanBoard } from "../components/KanbanBoard";
 import { useState } from "react";
-import TaskForm from "../components/taskForm";
+import TaskForm from "../components/TaskForm";
+import { generateId } from "../utils/IdGeneration";
 
 export function MainPage(){
     const [projects, setProjects] = useState([
@@ -27,13 +28,16 @@ export function MainPage(){
       
       <hr className="my-5" />
       
-      <KanbanBoard tasks={tasks} />
+      <KanbanBoard tasks={tasks} 
+        onEdit={(updatedTask) => {setTasks(tasks.map(task=>task.id===updatedTask.id?updatedTask:task))}} 
+        onDelete={(id)=>{setTasks(tasks.filter(task=>task.id !== id))}}
+      />
       
       <hr className="my-5" />
       
       <TaskForm onSubmit={(taskData) => {
         const newTask = {
-          id: Date.now(),
+          id: generateId(),
           ...taskData,
           projectId: 1
         };
