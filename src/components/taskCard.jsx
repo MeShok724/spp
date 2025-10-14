@@ -24,7 +24,7 @@ export const TaskCard = ({ task, onEdit, onDelete }) => {
   }
 
   return (
-    <div className="card mb-2">
+    <div className="card mb-2" style={{ minWidth: '140px' }}>
       <div className="card-body">
         <h6 className="card-title">{task.title}</h6>
         <p className="card-text small">{task.description}</p>
@@ -32,9 +32,9 @@ export const TaskCard = ({ task, onEdit, onDelete }) => {
           <small className="text-muted">Исполнитель: {task.assignee}</small>
         </p>
 
-        <div className="d-flex">
+        <div className="d-flex flex-wrap gap-2">
           <button 
-            className="btn" 
+            className="btn btn-sm btn-outline-primary" 
             onClick={()=>{setIsEditing(true)}}
           >
             Редактировать

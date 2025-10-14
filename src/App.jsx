@@ -3,12 +3,15 @@ import { Menu } from './components/menu'
 import { MainPage } from './pages/mainPage'
 import { BrowserRouter } from 'react-router-dom'
 import { AppRoutes } from './routes/appRoutes'
+import { AppProvider } from './context/AppContext';
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppRoutes/>
-    </BrowserRouter>
+    <AppProvider>
+      <BrowserRouter>
+        <AppRoutes/>
+      </BrowserRouter>
+    </AppProvider>
   )
 }
 

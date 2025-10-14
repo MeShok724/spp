@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const TaskForm = ({ onSubmit }) => {
+export const TaskForm = ({ onSubmit }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [assignee, setAssignee] = useState('');
