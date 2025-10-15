@@ -6,6 +6,7 @@ const router = express.Router();
 
 // GET /api/tasks - все задачи
 router.get('/', (req, res) => {
+  console.log(`все задачи`);
   try {
     const tasks = Task.getAll();
     res.json(tasks);
@@ -16,6 +17,7 @@ router.get('/', (req, res) => {
 
 // GET /api/tasks/project/:projectId - задачи проекта
 router.get('/project/:projectId', (req, res) => {
+  console.log(`задачи проекта`);
   try {
     const tasks = Task.getByProjectId(req.params.projectId);
     res.json(tasks);
@@ -26,6 +28,7 @@ router.get('/project/:projectId', (req, res) => {
 
 // GET /api/tasks/:id - задача по ID
 router.get('/:id', (req, res) => {
+  console.log(`задача по ID`);
   try {
     const task = Task.getById(req.params.id);
     if (!task) {
@@ -39,6 +42,7 @@ router.get('/:id', (req, res) => {
 
 // POST /api/tasks - создать задачу
 router.post('/', (req, res) => {
+  console.log(`создать задачу`);
   try {
     const { title, description, assignee, status, projectId } = req.body;
     
@@ -65,6 +69,7 @@ router.post('/', (req, res) => {
 
 // PUT /api/tasks/:id - обновить задачу
 router.put('/:id', (req, res) => {
+  console.log(`обновить задачу`);
   try {
     const task = Task.update(req.params.id, req.body);
     if (!task) {
@@ -78,6 +83,7 @@ router.put('/:id', (req, res) => {
 
 // DELETE /api/tasks/:id - удалить задачу
 router.delete('/:id', (req, res) => {
+  console.log(`удалить задачу`);
   try {
     const task = Task.getById(req.params.id);
     if (!task) {

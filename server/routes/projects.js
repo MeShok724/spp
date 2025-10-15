@@ -5,6 +5,7 @@ const router = express.Router();
 
 // GET /api/projects - все проекты
 router.get('/', (req, res) => {
+  console.log(`все проекты`);
   try {
     const projects = Project.getAll();
     res.json(projects);
@@ -15,6 +16,7 @@ router.get('/', (req, res) => {
 
 // GET /api/projects/:id - проект по ID
 router.get('/:id', (req, res) => {
+  console.log(`проект по ID`);
   try {
     const project = Project.getById(req.params.id);
     if (!project) {
@@ -28,6 +30,7 @@ router.get('/:id', (req, res) => {
 
 // POST /api/projects - создать проект
 router.post('/', (req, res) => {
+  console.log(`создать проект`);
   try {
     const { title } = req.body;
     if (!title) {
@@ -42,6 +45,7 @@ router.post('/', (req, res) => {
 
 // PUT /api/projects/:id - обновить проект
 router.put('/:id', (req, res) => {
+  console.log(`обновить проект`);
   try {
     const project = Project.update(req.params.id, req.body);
     if (!project) {
@@ -55,6 +59,7 @@ router.put('/:id', (req, res) => {
 
 // DELETE /api/projects/:id - удалить проект
 router.delete('/:id', (req, res) => {
+  console.log(`удалить проект`);
   try {
     const project = Project.delete(req.params.id);
     if (!project) {
