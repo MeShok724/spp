@@ -1,7 +1,7 @@
 let tasks = [
   { id: '1', title: 'Создать компоненты', description: 'Реализовать основные компоненты приложения', assignee: 'Иван', status: 'todo', projectId: '1' },
-  { id: '2', title: 'Настроить маршрутизацию', description: 'Добавить React Router', assignee: 'Петр', status: 'inProgress', projectId: '1' },
-  { id: '3', title: 'Тестирование', description: 'Протестировать функциональность', assignee: 'Мария', status: 'done', projectId: '1' }
+  { id: '2', title: 'Настроить маршрутизацию', description: 'Добавить React Router', assignee: 'Петр', status: 'inProgress', projectId: '2' },
+  { id: '3', title: 'Тестирование', description: 'Протестировать функциональность', assignee: 'Мария', status: 'done', projectId: '3' }
 ];
 
 export const Task = {

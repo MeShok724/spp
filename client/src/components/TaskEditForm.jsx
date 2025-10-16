@@ -18,7 +18,7 @@ export const TaskEditForm = ({ task, onSubmit, onCancel }) => {
   };
 
   return (
-    <div className="card">
+    <div className="card" style={{ minWidth: '140px' }}>
       <div className="card-header">
         <h5 className="mb-0">Редактировать задачу</h5>
       </div>
@@ -67,7 +67,7 @@ export const TaskEditForm = ({ task, onSubmit, onCancel }) => {
             </select>
           </div>
           
-          <div className="d-flex gap-2">
+          <div className="d-flex flex-wrap gap-2">
             <button type="button" className="btn btn-primary" onClick={handleSubmit}>
               Сохранить
             </button>

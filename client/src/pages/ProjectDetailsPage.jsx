@@ -5,9 +5,10 @@ import { TaskForm } from '../components/TaskForm';
 
 export const ProjectDetailsPage = () => {
   const { id } = useParams();
-  const { tasks, addTask, updateTask, deleteTask } = useAppContext();
+  const { projects, tasks, addTask, updateTask, deleteTask } = useAppContext();
   
-  const projectTasks = tasks.filter(task => task.projectId === parseInt(id));
+  const projectTasks = tasks.filter(task => String(task.projectId) === String(id));
+  const project = projects.find(p => String(p.id) === String(id))
 
   const handleTaskCreate = (taskData) => {
     addTask({
@@ -18,7 +19,7 @@ export const ProjectDetailsPage = () => {
 
   return (
     <div>
-      <h2>Проект {id}</h2>
+      <h2>Проект {project.title}</h2>
       
       <div className="row">
         <div className="col-md-8">

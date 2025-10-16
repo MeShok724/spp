@@ -1,6 +1,6 @@
 import { ProjectCard } from "./ProjectCard"
 
-export const ProjectList = ({ projects, onProjectClick }) => {
+export const ProjectList = ({ projects, onProjectClick, tasks }) => {
   return (
     <div>
       <div className="row">
@@ -9,6 +9,7 @@ export const ProjectList = ({ projects, onProjectClick }) => {
             <ProjectCard 
               project={project} 
               onClick={() => onProjectClick(project)}
+              taskCount={tasks.filter(task => String(task.projectId) === String(project.id)).length}
             />
           </div>
         ))}

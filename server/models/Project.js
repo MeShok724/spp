@@ -1,14 +1,14 @@
 let projects = [
-  { id: '1', title: 'Веб-приложение', taskCount: 3 },
-  { id: '2', title: 'Мобильное приложение', taskCount: 2 },
-  { id: '3', title: 'Документация', taskCount: 1 }
+  { id: '1', title: 'Веб-приложение' },
+  { id: '2', title: 'Мобильное приложение' },
+  { id: '3', title: 'Документация' }
 ];
 
 export const Project = {
   getAll: () => projects,
   getById: (id) => projects.find(p => p.id === id),
   create: (project) => {
-    const newProject = { id: Date.now().toString(), ...project, taskCount: 0 };
+    const newProject = { id: Date.now().toString(), ...project };
     projects.push(newProject);
     return newProject;
   },
@@ -27,16 +27,4 @@ export const Project = {
     }
     return null;
   },
-  incrementTaskCount: (id) => {
-    const project = projects.find(p => p.id === id);
-    if (project) {
-      project.taskCount++;
-    }
-  },
-  decrementTaskCount: (id) => {
-    const project = projects.find(p => p.id === id);
-    if (project) {
-      project.taskCount = Math.max(0, project.taskCount - 1);
-    }
-  }
 };

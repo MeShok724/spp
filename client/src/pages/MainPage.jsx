@@ -48,6 +48,7 @@ export function MainPage(){
         <ProjectList 
           projects={projects} 
           onProjectClick={handleProjectClick} 
+          tasks={tasks}
         />
         
         <hr className="my-5" />
@@ -59,7 +60,7 @@ export function MainPage(){
         
         <hr className="my-5" />
         
-        <TaskForm onSubmit={addTask} />
+        {/* <TaskForm onSubmit={addTask} /> */}
       </div>
     )
 }

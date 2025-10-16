@@ -58,9 +58,6 @@ router.post('/', (req, res) => {
       projectId
     });
 
-    // Обновляем счетчик задач в проекте
-    Project.incrementTaskCount(projectId);
-
     res.status(201).json(task);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -91,9 +88,6 @@ router.delete('/:id', (req, res) => {
     }
 
     Task.delete(req.params.id);
-    
-    // Обновляем счетчик задач в проекте
-    Project.decrementTaskCount(task.projectId);
 
     res.json({ message: 'Задача удалена', task });
   } catch (error) {

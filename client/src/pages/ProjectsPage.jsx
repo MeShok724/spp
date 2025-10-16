@@ -4,7 +4,7 @@ import { ProjectForm } from '../components/ProjectForm';
 import { useNavigate } from 'react-router-dom';
 
 export function ProjectsPage(){
-    const { projects, addProject } = useAppContext();
+    const { projects, addProject, tasks } = useAppContext();
     const navigate = useNavigate();
 
     const handleProjectClick = (project) => {
@@ -20,6 +20,7 @@ export function ProjectsPage(){
           <ProjectList 
             projects={projects} 
             onProjectClick={handleProjectClick} 
+            tasks={tasks}
           />
         </div>
         <div className="col-md-4">
