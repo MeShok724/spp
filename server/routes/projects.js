@@ -1,27 +1,38 @@
 import express from 'express';
 import { Project } from '../models/Project.js';
+import { Task } from '../models/Task.js';
 
 const router = express.Router();
 
-// GET /api/projects - все проекты
-router.get('/', (req, res) => {
-  console.log(`все проекты`);
+// GET /api/projects - все проекты с количеством задач
+router.get('/', async (req, res) => {
   try {
-    const projects = Project.getAll();
+    console.log('🔍 GET /api/projects - запрос получен');
+    const projects = await Project.find()
+      .populate('participants', 'login role')
+      .populate('taskCount');
+
+    // console.log('✅ Найдено проектов:', projects.length);
+    // console.log('📊 Проекты:', JSON.stringify(projects, null, 2));
+    
     res.json(projects);
   } catch (error) {
+    console.error('❌ Ошибка в GET /api/projects:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 // GET /api/projects/:id - проект по ID
-router.get('/:id', (req, res) => {
-  console.log(`проект по ID`);
+router.get('/:id', async (req, res) => {
   try {
-    const project = Project.getById(req.params.id);
+    const project = await Project.findById(req.params.id)
+      .populate('participants', 'login role')
+      .populate('taskCount');
+    
     if (!project) {
       return res.status(404).json({ error: 'Проект не найден' });
     }
+    
     res.json(project);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -29,14 +40,19 @@ router.get('/:id', (req, res) => {
 });
 
 // POST /api/projects - создать проект
-router.post('/', (req, res) => {
-  console.log(`создать проект`);
+router.post('/', async (req, res) => {
   try {
-    const { title } = req.body;
-    if (!title) {
-      return res.status(400).json({ error: 'Название проекта обязательно' });
-    }
-    const project = Project.create({ title });
+    const { title, description, participants } = req.body;
+    
+    const project = new Project({
+      title,
+      description,
+      participants: participants || []
+    });
+    
+    await project.save();
+    await project.populate('participants', 'login role');
+    
     res.status(201).json(project);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -44,13 +60,18 @@ router.post('/', (req, res) => {
 });
 
 // PUT /api/projects/:id - обновить проект
-router.put('/:id', (req, res) => {
-  console.log(`обновить проект`);
+router.put('/:id', async (req, res) => {
   try {
-    const project = Project.update(req.params.id, req.body);
+    const project = await Project.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    ).populate('participants', 'login role');
+    
     if (!project) {
       return res.status(404).json({ error: 'Проект не найден' });
     }
+    
     res.json(project);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -58,14 +79,18 @@ router.put('/:id', (req, res) => {
 });
 
 // DELETE /api/projects/:id - удалить проект
-router.delete('/:id', (req, res) => {
-  console.log(`удалить проект`);
+router.delete('/:id', async (req, res) => {
   try {
-    const project = Project.delete(req.params.id);
+    const project = await Project.findByIdAndDelete(req.params.id);
+    
     if (!project) {
       return res.status(404).json({ error: 'Проект не найден' });
     }
-    res.json({ message: 'Проект удален', project });
+    
+    // Удаляем все задачи проекта
+    await Task.deleteMany({ project: req.params.id });
+    
+    res.json({ message: 'Проект и связанные задачи удалены', project });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

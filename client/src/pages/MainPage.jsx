@@ -12,7 +12,7 @@ export function MainPage(){
 
     const navigate = useNavigate();
     const handleProjectClick = (project) => {
-        navigate(`/projects/${project.id}`);
+        navigate(`/projects/${project._id}`);
     };
 
     if (loading) {

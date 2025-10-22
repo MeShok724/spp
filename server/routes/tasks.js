@@ -1,25 +1,34 @@
 import express from 'express';
 import { Task } from '../models/Task.js';
 import { Project } from '../models/Project.js';
+import { User } from '../models/User.js'
 
 const router = express.Router();
 
 // GET /api/tasks - все задачи
-router.get('/', (req, res) => {
-  console.log(`все задачи`);
+router.get('/', async (req, res) => {
   try {
-    const tasks = Task.getAll();
+    console.log('🔍 GET /api/tasks - запрос получен');
+    const tasks = await Task.find()
+      .populate('assignee', 'login role')
+      .populate('project', 'title');
+    
+    // console.log('✅ Найдено задач:', tasks.length);
+    // console.log('📊 Задачи:', JSON.stringify(tasks, null, 2));
     res.json(tasks);
   } catch (error) {
+    console.error('❌ Ошибка в GET /api/tasks:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 // GET /api/tasks/project/:projectId - задачи проекта
-router.get('/project/:projectId', (req, res) => {
-  console.log(`задачи проекта`);
+router.get('/project/:projectId', async (req, res) => {
   try {
-    const tasks = Task.getByProjectId(req.params.projectId);
+    const tasks = await Task.find({ project: req.params.projectId })
+      .populate('assignee', 'login role')
+      .populate('project', 'title');
+    
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -27,13 +36,16 @@ router.get('/project/:projectId', (req, res) => {
 });
 
 // GET /api/tasks/:id - задача по ID
-router.get('/:id', (req, res) => {
-  console.log(`задача по ID`);
+router.get('/:id', async (req, res) => {
   try {
-    const task = Task.getById(req.params.id);
+    const task = await Task.findById(req.params.id)
+      .populate('assignee', 'login role')
+      .populate('project', 'title');
+    
     if (!task) {
-      return res.status(404).json({ error: 'Задача не найден' });
+      return res.status(404).json({ error: 'Задача не найдена' });
     }
+    
     res.json(task);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -41,23 +53,28 @@ router.get('/:id', (req, res) => {
 });
 
 // POST /api/tasks - создать задачу
-router.post('/', (req, res) => {
-  console.log(`создать задачу`);
+router.post('/', async (req, res) => {
   try {
-    const { title, description, assignee, status, projectId } = req.body;
+    const { title, description, status, assignee, project } = req.body;
     
-    if (!title || !projectId) {
-      return res.status(400).json({ error: 'Название и projectId обязательны' });
+    // Проверяем существование проекта
+    const projectExists = await Project.findById(project);
+    if (!projectExists) {
+      return res.status(404).json({ error: 'Проект не найден' });
     }
-
-    const task = Task.create({
+    
+    const task = new Task({
       title,
-      description: description || '',
-      assignee: assignee || '',
+      description,
       status: status || 'todo',
-      projectId
+      assignee,
+      project
     });
-
+    
+    await task.save();
+    await task.populate('assignee', 'login role');
+    await task.populate('project', 'title');
+    
     res.status(201).json(task);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -65,13 +82,20 @@ router.post('/', (req, res) => {
 });
 
 // PUT /api/tasks/:id - обновить задачу
-router.put('/:id', (req, res) => {
-  console.log(`обновить задачу`);
+router.put('/:id', async (req, res) => {
   try {
-    const task = Task.update(req.params.id, req.body);
+    const task = await Task.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    )
+    .populate('assignee', 'login role')
+    .populate('project', 'title');
+    
     if (!task) {
-      return res.status(404).json({ error: 'Задача не найден' });
+      return res.status(404).json({ error: 'Задача не найдена' });
     }
+    
     res.json(task);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -79,16 +103,14 @@ router.put('/:id', (req, res) => {
 });
 
 // DELETE /api/tasks/:id - удалить задачу
-router.delete('/:id', (req, res) => {
-  console.log(`удалить задачу`);
+router.delete('/:id', async (req, res) => {
   try {
-    const task = Task.getById(req.params.id);
+    const task = await Task.findByIdAndDelete(req.params.id);
+    
     if (!task) {
-      return res.status(404).json({ error: 'Задача не найден' });
+      return res.status(404).json({ error: 'Задача не найдена' });
     }
-
-    Task.delete(req.params.id);
-
+    
     res.json({ message: 'Задача удалена', task });
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -1,5 +1,11 @@
 import express from 'express';
 import cors from 'cors';
+import { connectDB } from './config/database.js';
+
+import './models/User.js';
+import './models/Project.js';
+import './models/Task.js';
+
 import projectsRouter from './routes/projects.js';
 import tasksRouter from './routes/tasks.js';
 
@@ -30,7 +36,9 @@ app.use((err, req, res, next) => {
 //   res.status(404).json({ error: 'Route not found' });
 // });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/api/health`);
+// Start server
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+  });
 });

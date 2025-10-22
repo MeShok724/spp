@@ -18,7 +18,7 @@ export const KanbanBoard = ({ tasks, onTaskMove, onEdit, onDelete }) => {
             </div>
             <div className="card-body">
               {todoTasks.map(task => (
-                <TaskCard key={task.id} task={task}
+                <TaskCard key={task._id} task={task}
                   onEdit={onEdit} onDelete={onDelete} />
               ))}
             </div>
@@ -33,7 +33,7 @@ export const KanbanBoard = ({ tasks, onTaskMove, onEdit, onDelete }) => {
             </div>
             <div className="card-body">
               {inProgressTasks.map(task => (
-                <TaskCard key={task.id} task={task}
+                <TaskCard key={task._id} task={task}
                   onEdit={onEdit} onDelete={onDelete} />
               ))}
             </div>
@@ -48,7 +48,7 @@ export const KanbanBoard = ({ tasks, onTaskMove, onEdit, onDelete }) => {
             </div>
             <div className="card-body">
               {doneTasks.map(task => (
-                <TaskCard key={task.id} task={task}
+                <TaskCard key={task._id} task={task}
                   onEdit={onEdit} onDelete={onDelete} />
               ))}
             </div>

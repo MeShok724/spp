@@ -1,30 +1,32 @@
-let projects = [
-  { id: '1', title: 'Веб-приложение' },
-  { id: '2', title: 'Мобильное приложение' },
-  { id: '3', title: 'Документация' }
-];
+import mongoose from 'mongoose';
 
-export const Project = {
-  getAll: () => projects,
-  getById: (id) => projects.find(p => p.id === id),
-  create: (project) => {
-    const newProject = { id: Date.now().toString(), ...project };
-    projects.push(newProject);
-    return newProject;
+const projectSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+    trim: true
   },
-  update: (id, updates) => {
-    const index = projects.findIndex(p => p.id === id);
-    if (index !== -1) {
-      projects[index] = { ...projects[index], ...updates };
-      return projects[index];
-    }
-    return null;
+  description: {
+    type: String,
+    default: ''
   },
-  delete: (id) => {
-    const index = projects.findIndex(p => p.id === id);
-    if (index !== -1) {
-      return projects.splice(index, 1)[0];
-    }
-    return null;
-  },
-};
+  participants: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }]
+}, {
+  timestamps: true
+});
+
+// Виртуальное поле для количества задач
+projectSchema.virtual('taskCount', {
+  ref: 'Task',
+  localField: '_id',
+  foreignField: 'project',
+  count: true
+});
+
+// Включение виртуальных полей в JSON
+projectSchema.set('toJSON', { virtuals: true });
+
+export const Project = mongoose.model('Project', projectSchema);

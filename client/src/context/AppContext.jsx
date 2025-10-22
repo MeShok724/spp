@@ -35,7 +35,7 @@ const appReducer = (state, action) => {
       return {
         ...state,
         tasks: state.tasks.map(task => 
-          task.id === action.payload.id ? action.payload : task
+          task._id === action.payload._id ? action.payload : task
         ),
         loading: false, error: null
       };
@@ -43,7 +43,7 @@ const appReducer = (state, action) => {
     case 'DELETE_TASK':
       return {
         ...state,
-        tasks: state.tasks.filter(task => task.id !== action.payload),
+        tasks: state.tasks.filter(task => task._id !== action.payload),
         loading: false, error: null
       };
     
@@ -105,7 +105,7 @@ export const AppProvider = ({ children }) => {
   const updateTask = async (taskData) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      const updatedTask = await tasksAPI.update(taskData.id, taskData);
+      const updatedTask = await tasksAPI.update(taskData._id, taskData);
       dispatch({ type: 'UPDATE_TASK', payload: updatedTask });
       return updatedTask;
     } catch (error) {

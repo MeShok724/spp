@@ -8,7 +8,7 @@ export function ProjectsPage(){
     const navigate = useNavigate();
 
     const handleProjectClick = (project) => {
-        navigate(`/projects/${project.id}`);
+        navigate(`/projects/${project._id}`);
     };
 
     return (

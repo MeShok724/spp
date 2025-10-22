@@ -2,13 +2,26 @@ import { useParams } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { KanbanBoard } from '../components/KanbanBoard';
 import { TaskForm } from '../components/TaskForm';
+import { useEffect, useState } from "react";
 
 export const ProjectDetailsPage = () => {
   const { id } = useParams();
   const { projects, tasks, addTask, updateTask, deleteTask } = useAppContext();
+  const [projectTasks, setProjectTasks] = useState([]);
+
+  useEffect(() => {
+      const filteredTasks = tasks.filter(task => 
+        task.project === id || 
+        task.project?._id === id
+      );
+      setProjectTasks(filteredTasks);
+    }, [tasks, id]);
   
-  const projectTasks = tasks.filter(task => String(task.projectId) === String(id));
-  const project = projects.find(p => String(p.id) === String(id))
+  const project = projects.find(p => String(p._id) === String(id))
+  if (!project)
+    return <>
+      Ошибка, проект не найден!
+    </>
 
   const handleTaskCreate = (taskData) => {
     addTask({
