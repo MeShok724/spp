@@ -1,6 +1,24 @@
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User.js';
 
+// Генерация токенов
+export const generateTokens = (payload) => {
+  const accessToken = jwt.sign(
+    payload,
+    process.env.JWT_ACCESS_SECRET || 'access-secret',
+    { expiresIn: '15m' }
+  );
+  
+  const refreshToken = jwt.sign(
+    payload,
+    process.env.JWT_REFRESH_SECRET || 'refresh-secret',
+    { expiresIn: '7d' }
+  );
+  
+  return { accessToken, refreshToken };
+};
+
+// Верификация access токена
 export const auth = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -10,7 +28,7 @@ export const auth = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    const user = await User.findById(decoded.userId).select('-password');
+    const user = await User.findById(decoded.userId).select('-password -refreshTokens');
     
     if (!user) {
       return res.status(401).json({ error: 'Пользователь не найден' });
@@ -19,8 +37,32 @@ export const auth = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    console.error('❌ Ошибка проверки токена:', error);
-    res.status(401).json({ error: 'Неверный токен' });
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Access token истек' });
+    }
+    console.error('❌ Ошибка проверки access token:', error);
+    res.status(401).json({ error: 'Неверный access token' });
+  }
+};
+
+// Верификация refresh токена
+export const verifyRefreshToken = async (token) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET || 'refresh-secret');
+    const user = await User.findById(decoded.userId);
+    
+    if (!user) {
+      throw new Error('Пользователь не найден');
+    }
+    
+    const isValid = await user.validateRefreshToken(token);
+    if (!isValid) {
+      throw new Error('Неверный refresh token');
+    }
+    
+    return user;
+  } catch (error) {
+    throw error;
   }
 };
 
