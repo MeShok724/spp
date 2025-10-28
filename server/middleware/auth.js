@@ -27,8 +27,8 @@ export const auth = async (req, res, next) => {
       return res.status(401).json({ error: 'Токен не предоставлен' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    const user = await User.findById(decoded.userId).select('-password -refreshTokens');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'access-secret');
+    const user = await User.findById(decoded.userId).select('-password');
     
     if (!user) {
       return res.status(401).json({ error: 'Пользователь не найден' });
@@ -53,11 +53,6 @@ export const verifyRefreshToken = async (token) => {
     
     if (!user) {
       throw new Error('Пользователь не найден');
-    }
-    
-    const isValid = await user.validateRefreshToken(token);
-    if (!isValid) {
-      throw new Error('Неверный refresh token');
     }
     
     return user;
