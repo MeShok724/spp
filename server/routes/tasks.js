@@ -2,11 +2,12 @@ import express from 'express';
 import { Task } from '../models/Task.js';
 import { Project } from '../models/Project.js';
 import { User } from '../models/User.js'
+import {auth, adminOrMember, isAdmin, adminOrMemberTask} from '../middleware/auth.js'
 
 const router = express.Router();
 
 // GET /api/tasks - все задачи
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     console.log('🔍 GET /api/tasks - запрос получен');
     const tasks = await Task.find()
@@ -23,7 +24,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/tasks/project/:projectId - задачи проекта
-router.get('/project/:projectId', async (req, res) => {
+router.get('/project/:projectId', auth, adminOrMember, async (req, res) => {
   try {
     const tasks = await Task.find({ project: req.params.projectId })
       .populate('assignee', 'login role')
@@ -36,7 +37,7 @@ router.get('/project/:projectId', async (req, res) => {
 });
 
 // GET /api/tasks/:id - задача по ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, adminOrMemberTask, async (req, res) => {
   try {
     const task = await Task.findById(req.params.id)
       .populate('assignee', 'login role')
@@ -53,7 +54,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/tasks - создать задачу
-router.post('/', async (req, res) => {
+router.post('/', auth, adminOrMember, async (req, res) => {
   try {
     const { title, description, status, assignee, project } = req.body;
     
@@ -82,7 +83,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/tasks/:id - обновить задачу
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, adminOrMemberTask, async (req, res) => {
   try {
     const task = await Task.findByIdAndUpdate(
       req.params.id,
@@ -103,7 +104,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/tasks/:id - удалить задачу
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, adminOrMemberTask, async (req, res) => {
   try {
     const task = await Task.findByIdAndDelete(req.params.id);
     

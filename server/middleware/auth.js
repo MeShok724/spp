@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User.js';
+import { Project } from '../models/Project.js';
+import { Task } from '../models/Task.js';
 
 // Генерация токенов
 export const generateTokens = (payload) => {
@@ -61,18 +63,90 @@ export const verifyRefreshToken = async (token) => {
   }
 };
 
-export const requireRole = (roles) => {
-  return (req, res, next) => {
+export const adminOrMember = async (req, res, next) => {
+  try {
     if (!req.user) {
       return res.status(401).json({ error: 'Требуется авторизация' });
     }
 
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ 
-        error: 'Недостаточно прав для выполнения операции' 
-      });
+    const projectId = req.params.id || req.params.projectId || req.body.project;
+    const userId = req.user._id;
+
+    // Если админ — пропускаем сразу
+    if (req.user.role === 'admin') {
+      return next();
     }
 
+    const project = await Project.findById(projectId);
+
+    if (!project) {
+      return res.status(404).json({ error: 'Проект не найден в middleware' });
+    }
+
+    // Проверяем, что пользователь — участник проекта
+    const isMember = project.participants.some(p => p.equals(userId));
+
+    if (!isMember) {
+      return res.status(403).json({ error: 'Нет доступа к проекту' });
+    }
     next();
-  };
+  } catch (error) {
+    console.error('Ошибка проверки доступа к проекту:', error);
+    res.status(500).json({ error: 'Ошибка проверки доступа' });
+  }
+};
+
+export const isAdmin = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Требуется авторизация' });
+    }
+
+    // Если админ — пропускаем сразу
+    if (!req.user.role === 'admin') {
+      return res.status(403).json({ error: 'Нет доступа к проекту' });
+    }
+    next();
+  } catch (error) {
+    console.error('Ошибка проверки доступа isAdmin:', error);
+    res.status(500).json({ error: 'Ошибка проверки доступа' });
+  }
+}
+
+export const adminOrMemberTask = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Требуется авторизация' });
+    }
+
+    const userId = req.user._id;
+    const taskId = req.params.taskId || req.params.id;
+
+    // Если админ — пропускаем сразу
+    if (req.user.role === 'admin') {
+      return next();
+    }
+
+    const task = await Task.findById(taskId);
+    if (!task) {
+      return res.status(404).json({ error: 'Задача не найдена' });
+    }
+    const projectId = task.project;
+    const project = await Project.findById(projectId);
+
+    if (!project) {
+      return res.status(404).json({ error: 'Проект не найден' });
+    }
+
+    // Проверяем, что пользователь — участник проекта
+    const isMember = project.participants.some(participant => participant.equals(userId));
+
+    if (!isMember) {
+      return res.status(403).json({ error: 'Нет доступа к проекту' });
+    }
+    next();
+  } catch (error) {
+    console.error('Ошибка проверки доступа к проекту:', error);
+    res.status(500).json({ error: 'Ошибка проверки доступа' });
+  }
 };

@@ -1,11 +1,12 @@
 import express from 'express';
 import { Project } from '../models/Project.js';
 import { Task } from '../models/Task.js';
+import {auth, adminOrMember, isAdmin} from '../middleware/auth.js'
 
 const router = express.Router();
 
 // GET /api/projects - все проекты с количеством задач
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     console.log('🔍 GET /api/projects - запрос получен');
     const projects = await Project.find()
@@ -23,7 +24,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/projects/:id - проект по ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, adminOrMember, async (req, res) => {
   try {
     const project = await Project.findById(req.params.id)
       .populate('participants', 'login role')
@@ -40,7 +41,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/projects - создать проект
-router.post('/', async (req, res) => {
+router.post('/', auth, isAdmin, async (req, res) => {
   try {
     const { title, description, participants } = req.body;
     
@@ -60,7 +61,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/projects/:id - обновить проект
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, isAdmin, async (req, res) => {
   try {
     const project = await Project.findByIdAndUpdate(
       req.params.id,
@@ -79,7 +80,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/projects/:id - удалить проект
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, isAdmin, async (req, res) => {
   try {
     const project = await Project.findByIdAndDelete(req.params.id);
     
