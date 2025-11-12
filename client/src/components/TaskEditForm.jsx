@@ -1,12 +1,65 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-export const TaskEditForm = ({ task, onSubmit, onCancel }) => {
+const normalizeParticipants = (participants) => {
+  if (!Array.isArray(participants)) {
+    return [];
+  }
+
+  return participants
+    .map((participant) => {
+      if (!participant) {
+        return null;
+      }
+      if (typeof participant === 'string') {
+        return { _id: participant, login: participant };
+      }
+      return {
+        _id: participant._id,
+        login: participant.login ?? participant._id,
+        role: participant.role,
+      };
+    })
+    .filter(Boolean);
+};
+
+export const TaskEditForm = ({ task, onSubmit, onCancel, participants }) => {
+  const normalizedParticipants = useMemo(
+    () => normalizeParticipants(participants),
+    [participants]
+  );
+  const initialAssigneeId = useMemo(() => {
+    if (!task.assignee) {
+      return '';
+    }
+    if (typeof task.assignee === 'string') {
+      return task.assignee;
+    }
+    return task.assignee._id ?? '';
+  }, [task.assignee]);
+
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description);
-  const [assignee, setAssignee] = useState(task.assignee);
+  const [assignee, setAssignee] = useState(initialAssigneeId);
   const [status, setStatus] = useState(task.status);
 
+  useEffect(() => {
+    setTitle(task.title);
+    setDescription(task.description);
+    setStatus(task.status);
+    setAssignee(initialAssigneeId);
+  }, [task, initialAssigneeId]);
+
+  useEffect(() => {
+    if (!assignee && normalizedParticipants.length > 0) {
+      setAssignee(normalizedParticipants[0]._id);
+    }
+  }, [normalizedParticipants, assignee]);
+
   const handleSubmit = () => {
+    if (!assignee) {
+      return;
+    }
+
     onSubmit({
       
       ...task,
@@ -46,12 +99,27 @@ export const TaskEditForm = ({ task, onSubmit, onCancel }) => {
           
           <div className="mb-3">
             <label className="form-label">Исполнитель</label>
-            <input
-              type="text"
-              className="form-control"
-              value={assignee}
-              onChange={(e) => setAssignee(e.target.value)}
-            />
+            {normalizedParticipants.length === 0 ? (
+              <input
+                type="text"
+                className="form-control"
+                value={typeof assignee === 'string' ? assignee : 'Исполнитель не выбран'}
+                disabled
+              />
+            ) : (
+              <select
+                className="form-select"
+                value={assignee}
+                onChange={(e) => setAssignee(e.target.value)}
+                required
+              >
+                {normalizedParticipants.map((participant) => (
+                  <option key={participant._id} value={participant._id}>
+                    {participant.login}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
           
           <div className="mb-3">

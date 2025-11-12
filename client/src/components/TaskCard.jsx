@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TaskEditForm } from './TaskEditForm'
 
-export const TaskCard = ({ task, onEdit, onDelete, canManage = true }) => {
+export const TaskCard = ({ task, onEdit, onDelete, canManage = true, participants = [] }) => {
   const [isEditing, setIsEditing] = useState(false)
 
   const getAssigneeName = () => {
@@ -25,6 +25,7 @@ export const TaskCard = ({ task, onEdit, onDelete, canManage = true }) => {
         task={task}
         onSubmit={handleEdit}
         onCancel={handleCancel}
+        participants={participants}
       />
     );
   }

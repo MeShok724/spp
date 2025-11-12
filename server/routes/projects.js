@@ -55,6 +55,7 @@ router.post('/', auth, isAdmin, async (req, res) => {
     
     await project.save();
     await project.populate('participants', 'login role');
+    await project.populate('taskCount');
     
     res.status(201).json(project);
   } catch (error) {
@@ -69,7 +70,8 @@ router.put('/:id', auth, isAdmin, async (req, res) => {
       req.params.id,
       req.body,
       { new: true, runValidators: true }
-    ).populate('participants', 'login role');
+    ).populate('participants', 'login role')
+     .populate('taskCount');
     
     if (!project) {
       return res.status(404).json({ error: 'Проект не найден' });

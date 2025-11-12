@@ -13,7 +13,7 @@ export function ProjectsPage(){
     };
 
     return (
-    <div>
+    <div className="ps-5">
       <h2>Проекты</h2> 
       
       <div className="row">

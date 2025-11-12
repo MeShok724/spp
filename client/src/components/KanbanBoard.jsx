@@ -1,6 +1,6 @@
 import { TaskCard } from "./TaskCard";
 
-export const KanbanBoard = ({ tasks, onTaskMove, onEdit, onDelete, canManageTasks = true }) => {
+export const KanbanBoard = ({ tasks, onTaskMove, onEdit, onDelete, canManageTasks = true, participants = [] }) => {
   
   const todoTasks = tasks.filter(task => task.status === 'todo');
   const inProgressTasks = tasks.filter(task => task.status === 'inProgress');
@@ -23,6 +23,7 @@ export const KanbanBoard = ({ tasks, onTaskMove, onEdit, onDelete, canManageTask
                   task={task}
                   onEdit={onEdit}
                   onDelete={onDelete}
+                  participants={participants}
                   canManage={canManageTasks}
                 />
               ))}
@@ -43,6 +44,7 @@ export const KanbanBoard = ({ tasks, onTaskMove, onEdit, onDelete, canManageTask
                   task={task}
                   onEdit={onEdit}
                   onDelete={onDelete}
+                  participants={participants}
                   canManage={canManageTasks}
                 />
               ))}
@@ -63,6 +65,7 @@ export const KanbanBoard = ({ tasks, onTaskMove, onEdit, onDelete, canManageTask
                   task={task}
                   onEdit={onEdit}
                   onDelete={onDelete}
+                  participants={participants}
                   canManage={canManageTasks}
                 />
               ))}

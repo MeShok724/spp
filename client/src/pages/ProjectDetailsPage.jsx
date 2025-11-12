@@ -92,22 +92,39 @@ export const ProjectDetailsPage = () => {
 
   const participants = Array.isArray(project.participants) ? project.participants : [];
 
+  const normalizedParticipants = useMemo(() => {
+    return participants.map(participant => {
+      if (!participant) {
+        return null;
+      }
+      if (typeof participant === 'string') {
+        const userFromList = users?.find(user => user._id === participant);
+        if (userFromList) {
+          return userFromList;
+        }
+        return { _id: participant, login: participant };
+      }
+      return participant;
+    }).filter(Boolean);
+  }, [participants, users]);
+
   return (
-    <div>
-      <h2>Проект {project.title}</h2>
+    <div className="ps-5 mt-5 pt-5">
+      <h2 className="mb-4">Проект {project.title}</h2>
       
-      <div className="row">
+      <div className="row gy-4 gx-5">
         <div className="col-md-8">
           <KanbanBoard 
             tasks={projectTasks} 
             onEdit={canManageTasks ? updateTask : undefined}
             onDelete={canManageTasks ? deleteTask : undefined}
             canManageTasks={canManageTasks}
+            participants={normalizedParticipants}
           />
         </div>
         <div className="col-md-4">
           {canManageTasks ? (
-            <TaskForm onSubmit={handleTaskCreate} />
+            <TaskForm onSubmit={handleTaskCreate} participants={normalizedParticipants} />
           ) : (
             <div className="card border-0 bg-light h-100">
               <div className="card-body">
@@ -122,17 +139,17 @@ export const ProjectDetailsPage = () => {
 
       <div className="mt-4">
         <h3>Участники</h3>
-        {participants.length > 0 ? (
+        {normalizedParticipants.length > 0 ? (
           <ul className="list-unstyled">
-            {participants.map(participant => {
-              const participantId = typeof participant === 'string' ? participant : participant?._id;
-              const participantName = typeof participant === 'object' ? participant?.login : participantId;
-              const participantRole = typeof participant === 'object' ? participant?.role : null;
+            {normalizedParticipants.map(participant => {
+              const participantId = participant?._id || participant;
+              const participantName = participant?.login || participantId || 'Неизвестный пользователь';
+              const participantRole = participant?.role;
 
               return (
                 <li key={participantId}>
-                  {participantName || 'Неизвестный пользователь'}
-                  {participantRole === 'admin' ? ' (администратор)' : '(пользователь)'}
+                  - {participantName}
+                  {participantRole === 'admin' ? ' (администратор)' : ' (пользователь)'}
                 </li>
               );
             })}
@@ -143,6 +160,7 @@ export const ProjectDetailsPage = () => {
 
         {currentUser?.role === 'admin' && (
           <div className="mt-3">
+            <h5 className="mb-3">Управление участниками</h5>
             {participantFeedback && (
               <div className={`alert alert-${participantFeedback.type === 'error' ? 'danger' : 'success'}`}>
                 {participantFeedback.message}

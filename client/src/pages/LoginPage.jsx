@@ -28,7 +28,6 @@ export const LoginPage = () => {
       localStorage.setItem("user", JSON.stringify(data.user));
       syncAuthFromStorage();
 
-      alert("Успешный вход!");
       navigate('/');
     } catch (err) {
       alert(err.message);

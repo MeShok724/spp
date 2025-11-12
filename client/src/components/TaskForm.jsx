@@ -1,13 +1,50 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-export const TaskForm = ({ onSubmit }) => {
+const normalizeParticipants = (participants) => {
+  if (!Array.isArray(participants)) {
+    return [];
+  }
+
+  return participants
+    .map((participant) => {
+      if (!participant) {
+        return null;
+      }
+      if (typeof participant === 'string') {
+        return { _id: participant, login: participant };
+      }
+      return {
+        _id: participant._id,
+        login: participant.login ?? participant._id,
+        role: participant.role,
+      };
+    })
+    .filter(Boolean);
+};
+
+export const TaskForm = ({ onSubmit, participants }) => {
+  const normalizedParticipants = useMemo(
+    () => normalizeParticipants(participants),
+    [participants]
+  );
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [assignee, setAssignee] = useState('');
   const [status, setStatus] = useState('todo');
 
+  useEffect(() => {
+    if (normalizedParticipants.length > 0 && !assignee) {
+      setAssignee(normalizedParticipants[0]._id);
+    }
+  }, [normalizedParticipants, assignee]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!assignee) {
+      return;
+    }
+
     onSubmit({
       title,
       description,
@@ -16,7 +53,7 @@ export const TaskForm = ({ onSubmit }) => {
     });
     setTitle('');
     setDescription('');
-    setAssignee('');
+    setAssignee(normalizedParticipants[0]?._id ?? '');
     setStatus('todo');
   };
 
@@ -49,12 +86,27 @@ export const TaskForm = ({ onSubmit }) => {
           
           <div className="mb-3">
             <label className="form-label">Исполнитель</label>
-            <input
-              type="text"
-              className="form-control"
-              value={assignee}
-              onChange={(e) => setAssignee(e.target.value)}
-            />
+            {normalizedParticipants.length === 0 ? (
+              <input
+                type="text"
+                className="form-control"
+                value="В проекте нет участников"
+                disabled
+              />
+            ) : (
+              <select
+                className="form-select"
+                value={assignee}
+                onChange={(e) => setAssignee(e.target.value)}
+                required
+              >
+                {normalizedParticipants.map((participant) => (
+                  <option key={participant._id} value={participant._id}>
+                    {participant.login}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
           
           <div className="mb-3">
@@ -70,7 +122,7 @@ export const TaskForm = ({ onSubmit }) => {
             </select>
           </div>
           
-          <button type="submit" className="btn btn-primary">
+          <button type="submit" className="btn btn-primary" disabled={normalizedParticipants.length === 0}>
             Создать задачу
           </button>
         </form>

@@ -9,6 +9,7 @@ const initialState = {
   users: [],
   loading: false,
   error: null,
+  lastLoadedProjectParticipants: {},
 };
 
 const appReducer = (state, action) => {
@@ -62,6 +63,17 @@ const appReducer = (state, action) => {
         ...state,
         users: action.payload,
         error: null
+      };
+
+    // Сохраняем последние загруженные участники проекта
+    case 'SET_PROJECT_PARTICIPANTS':
+      return {
+        ...state,
+        lastLoadedProjectParticipants: {
+          ...state.lastLoadedProjectParticipants,
+          [action.payload.projectId]: action.payload.participants,
+        },
+        error: null,
       };
     
     default:
@@ -210,7 +222,7 @@ export const AppProvider = ({ children }) => {
   const addTask = async (taskData) => {
     try {
       const user = getCurrentUser();
-      if (user?._id) {
+      if (!taskData.assignee && user?._id) {
         taskData.assignee = user._id;
       }
       dispatch({ type: 'SET_LOADING', payload: true });
@@ -230,7 +242,7 @@ export const AppProvider = ({ children }) => {
   const updateTask = async (taskData) => {
     try {
       const user = getCurrentUser();
-      if (user?._id) {
+      if (!taskData.assignee && user?._id) {
         taskData.assignee = user._id;
       }
       dispatch({ type: 'SET_LOADING', payload: true });
@@ -287,6 +299,7 @@ export const AppProvider = ({ children }) => {
     loadUsers,
     syncAuthFromStorage,
     setCurrentUser,
+    logout: clearAuth,
   };
 
   return (
