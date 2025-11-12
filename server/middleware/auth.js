@@ -103,7 +103,7 @@ export const isAdmin = async (req, res, next) => {
     }
 
     // Если админ — пропускаем сразу
-    if (!req.user.role === 'admin') {
+    if (req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Нет доступа к проекту' });
     }
     next();

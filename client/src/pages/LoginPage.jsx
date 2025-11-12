@@ -1,10 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from "react";
+import { useAppContext } from "../context/AppContext";
 
 export const LoginPage = () => {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const { syncAuthFromStorage } = useAppContext();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -21,9 +23,10 @@ export const LoginPage = () => {
       if (!res.ok) throw new Error(data.error || "Ошибка входа");
 
       // сохраняем токены и данные пользователя
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("refreshToken", data.refreshToken);
+      localStorage.setItem("accessToken", data.tokens.accessToken);
+      localStorage.setItem("refreshToken", data.tokens.refreshToken);
       localStorage.setItem("user", JSON.stringify(data.user));
+      syncAuthFromStorage();
 
       alert("Успешный вход!");
       navigate('/');

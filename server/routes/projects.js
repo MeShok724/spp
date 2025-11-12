@@ -43,6 +43,7 @@ router.get('/:id', auth, adminOrMember, async (req, res) => {
 // POST /api/projects - создать проект
 router.post('/', auth, isAdmin, async (req, res) => {
   try {
+    console.log('Request', req);
     const { title, description, participants } = req.body;
     
     const project = new Project({
@@ -50,6 +51,7 @@ router.post('/', auth, isAdmin, async (req, res) => {
       description,
       participants: participants || []
     });
+    
     
     await project.save();
     await project.populate('participants', 'login role');

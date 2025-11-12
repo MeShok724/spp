@@ -56,8 +56,8 @@ router.get('/:id', auth, adminOrMemberTask, async (req, res) => {
 // POST /api/tasks - создать задачу
 router.post('/', auth, adminOrMember, async (req, res) => {
   try {
-    const { title, description, status, assignee, project } = req.body;
-    
+    const { title, description, status, project } = req.body;
+    const assignee = req.user._id;
     // Проверяем существование проекта
     const projectExists = await Project.findById(project);
     if (!projectExists) {
@@ -93,6 +93,7 @@ router.put('/:id', auth, adminOrMemberTask, async (req, res) => {
     .populate('assignee', 'login role')
     .populate('project', 'title');
     
+    console.log(req);
     if (!task) {
       return res.status(404).json({ error: 'Задача не найдена' });
     }

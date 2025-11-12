@@ -9,6 +9,7 @@ import './models/Task.js';
 import projectsRouter from './routes/projects.js';
 import tasksRouter from './routes/tasks.js';
 import authRouter from './routes/auth.js'
+import usersRouter from './routes/users.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use('/api/projects', projectsRouter);
 app.use('/api/tasks', tasksRouter);
 app.use('/api/auth', authRouter)
+app.use('/api/users', usersRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
