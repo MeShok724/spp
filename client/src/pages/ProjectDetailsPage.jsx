@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { KanbanBoard } from '../components/KanbanBoard';
 import { TaskForm } from '../components/TaskForm';
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export const ProjectDetailsPage = () => {
   const { id } = useParams();
@@ -23,19 +23,19 @@ export const ProjectDetailsPage = () => {
   
   const project = projects.find(p => String(p._id) === String(id))
 
-  useEffect(() => {
-    if (project?.participants) {
-      const participantIds = project.participants.map(participant => {
-        if (typeof participant === 'string') {
-          return participant;
-        }
-        return participant?._id;
-      }).filter(Boolean);
-      setSelectedParticipants(participantIds);
-    } else {
-      setSelectedParticipants([]);
+  const participantIds = useMemo(() => {
+    if (!project?.participants) {
+      return [];
     }
+
+    return project.participants
+      .map(participant => (typeof participant === 'string' ? participant : participant?._id))
+      .filter(Boolean);
   }, [project]);
+
+  useEffect(() => {
+    setSelectedParticipants(participantIds);
+  }, [participantIds]);
 
   useEffect(() => {
     if (currentUser?.role === 'admin' && (!users || users.length === 0)) {
@@ -48,7 +48,14 @@ export const ProjectDetailsPage = () => {
       Ошибка, проект не найден!
     </>
 
+  const currentUserId = currentUser?._id;
+  const canManageTasks = currentUser?.role === 'admin' || (currentUserId && participantIds.includes(currentUserId));
+
   const handleTaskCreate = (taskData) => {
+    if (!canManageTasks) {
+      return;
+    }
+
     addTask({
       ...taskData,
       project: id
@@ -93,12 +100,23 @@ export const ProjectDetailsPage = () => {
         <div className="col-md-8">
           <KanbanBoard 
             tasks={projectTasks} 
-            onEdit={updateTask}
-            onDelete={deleteTask}
+            onEdit={canManageTasks ? updateTask : undefined}
+            onDelete={canManageTasks ? deleteTask : undefined}
+            canManageTasks={canManageTasks}
           />
         </div>
         <div className="col-md-4">
-          <TaskForm onSubmit={handleTaskCreate} />
+          {canManageTasks ? (
+            <TaskForm onSubmit={handleTaskCreate} />
+          ) : (
+            <div className="card border-0 bg-light h-100">
+              <div className="card-body">
+                <p className="text-muted mb-0">
+                  У вас нет прав на управление задачами этого проекта.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

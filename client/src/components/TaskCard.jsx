@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TaskEditForm } from './TaskEditForm'
 
-export const TaskCard = ({ task, onEdit, onDelete }) => {
+export const TaskCard = ({ task, onEdit, onDelete, canManage = true }) => {
   const [isEditing, setIsEditing] = useState(false)
 
   const getAssigneeName = () => {
@@ -12,14 +12,14 @@ export const TaskCard = ({ task, onEdit, onDelete }) => {
 
   const handleEdit = (updatedTask) => {
     setIsEditing(false);
-    onEdit(updatedTask);
+    onEdit?.(updatedTask);
   };
 
   const handleCancel = () => {
     setIsEditing(false);
   };
 
-  if (isEditing) {
+  if (isEditing && canManage && onEdit) {
     return (
       <TaskEditForm 
         task={task}
@@ -38,20 +38,26 @@ export const TaskCard = ({ task, onEdit, onDelete }) => {
           <small className="text-muted">Исполнитель: {getAssigneeName()}</small>
         </p>
 
-        <div className="d-flex flex-wrap gap-2">
-          <button 
-            className="btn btn-sm btn-outline-primary" 
-            onClick={()=>{setIsEditing(true)}}
-          >
-            Редактировать
-          </button>
-          <button 
-            className="btn btn-sm btn-outline-danger"
-            onClick={() => {onDelete(task._id)}}
-          >
-            Удалить
-          </button>
-        </div>
+        {canManage && (
+          <div className="d-flex flex-wrap gap-2">
+            {onEdit && (
+              <button 
+                className="btn btn-sm btn-outline-primary" 
+                onClick={() => { setIsEditing(true); }}
+              >
+                Редактировать
+              </button>
+            )}
+            {onDelete && (
+              <button 
+                className="btn btn-sm btn-outline-danger"
+                onClick={() => { onDelete(task._id); }}
+              >
+                Удалить
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

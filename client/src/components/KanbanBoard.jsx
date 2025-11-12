@@ -1,6 +1,6 @@
 import { TaskCard } from "./TaskCard";
 
-export const KanbanBoard = ({ tasks, onTaskMove, onEdit, onDelete }) => {
+export const KanbanBoard = ({ tasks, onTaskMove, onEdit, onDelete, canManageTasks = true }) => {
   
   const todoTasks = tasks.filter(task => task.status === 'todo');
   const inProgressTasks = tasks.filter(task => task.status === 'inProgress');
@@ -18,8 +18,13 @@ export const KanbanBoard = ({ tasks, onTaskMove, onEdit, onDelete }) => {
             </div>
             <div className="card-body">
               {todoTasks.map(task => (
-                <TaskCard key={task._id} task={task}
-                  onEdit={onEdit} onDelete={onDelete} />
+                <TaskCard
+                  key={task._id}
+                  task={task}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  canManage={canManageTasks}
+                />
               ))}
             </div>
           </div>
@@ -33,8 +38,13 @@ export const KanbanBoard = ({ tasks, onTaskMove, onEdit, onDelete }) => {
             </div>
             <div className="card-body">
               {inProgressTasks.map(task => (
-                <TaskCard key={task._id} task={task}
-                  onEdit={onEdit} onDelete={onDelete} />
+                <TaskCard
+                  key={task._id}
+                  task={task}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  canManage={canManageTasks}
+                />
               ))}
             </div>
           </div>
@@ -48,8 +58,13 @@ export const KanbanBoard = ({ tasks, onTaskMove, onEdit, onDelete }) => {
             </div>
             <div className="card-body">
               {doneTasks.map(task => (
-                <TaskCard key={task._id} task={task}
-                  onEdit={onEdit} onDelete={onDelete} />
+                <TaskCard
+                  key={task._id}
+                  task={task}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  canManage={canManageTasks}
+                />
               ))}
             </div>
           </div>
