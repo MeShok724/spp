@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const normalizeParticipants = (participants) => {
   if (!Array.isArray(participants)) {
@@ -32,6 +32,8 @@ export const TaskForm = ({ onSubmit, participants }) => {
   const [description, setDescription] = useState('');
   const [assignee, setAssignee] = useState('');
   const [status, setStatus] = useState('todo');
+  const [attachmentFile, setAttachmentFile] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (normalizedParticipants.length > 0 && !assignee) {
@@ -49,12 +51,17 @@ export const TaskForm = ({ onSubmit, participants }) => {
       title,
       description,
       assignee,
-      status
+      status,
+      attachmentFile
     });
     setTitle('');
     setDescription('');
     setAssignee(normalizedParticipants[0]?._id ?? '');
     setStatus('todo');
+    setAttachmentFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -120,6 +127,22 @@ export const TaskForm = ({ onSubmit, participants }) => {
               <option value="inProgress">In Progress</option>
               <option value="done">Done</option>
             </select>
+          </div>
+
+          {/*Вложение */}
+          <div className="mb-4">
+            <label className="form-label">Вложение</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="form-control"
+              onChange={(e) => setAttachmentFile(e.target.files?.[0] ?? null)}
+            />
+            {attachmentFile && (
+              <small className="text-muted d-block mt-2">
+                Выбран файл: {attachmentFile.name}
+              </small>
+            )}
           </div>
           
           <button type="submit" className="btn btn-primary" disabled={normalizedParticipants.length === 0}>

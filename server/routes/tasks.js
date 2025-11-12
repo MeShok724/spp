@@ -1,10 +1,50 @@
 import express from 'express';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { Task } from '../models/Task.js';
 import { Project } from '../models/Project.js';
-import { User } from '../models/User.js'
-import {auth, adminOrMember, isAdmin, adminOrMemberTask} from '../middleware/auth.js'
+import {auth, adminOrMember, adminOrMemberTask} from '../middleware/auth.js'
 
 const router = express.Router();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadDir = path.join(__dirname, '..', 'uploads', 'tasks');
+fs.mkdirSync(uploadDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (_, __, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (_, file, cb) => {
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    const ext = path.extname(file.originalname) || '';
+    cb(null, `${uniqueSuffix}${ext}`);
+  }
+});
+
+const upload = multer({ storage });
+
+const buildAttachment = (file) => ({
+  filename: file.filename,
+  originalName: file.originalname,
+  mimeType: file.mimetype,
+  size: file.size,
+  url: `/uploads/tasks/${file.filename}`
+});
+
+const deleteAttachmentFile = (attachment) => {
+  if (!attachment?.filename) {
+    return;
+  }
+
+  const filePath = path.join(uploadDir, attachment.filename);
+  fs.promises.stat(filePath)
+    .then(() => fs.promises.unlink(filePath).catch(() => {}))
+    .catch(() => {});
+};
 
 // GET /api/tasks - все задачи
 router.get('/', auth, async (req, res) => {
@@ -54,10 +94,11 @@ router.get('/:id', auth, adminOrMemberTask, async (req, res) => {
 });
 
 // POST /api/tasks - создать задачу
-router.post('/', auth, adminOrMember, async (req, res) => {
+router.post('/', auth, upload.single('attachment'), adminOrMember, async (req, res) => {
   try {
-    const { title, description, status, project } = req.body;
-    const assignee = req.user._id;
+    const { title, description, status, project, assignee } = req.body;
+    const assigneeId = assignee || req.user._id;
+    
     // Проверяем существование проекта
     const projectExists = await Project.findById(project);
     if (!projectExists) {
@@ -68,8 +109,9 @@ router.post('/', auth, adminOrMember, async (req, res) => {
       title,
       description,
       status: status || 'todo',
-      assignee,
-      project
+      assignee: assigneeId,
+      project,
+      attachment: req.file ? buildAttachment(req.file) : undefined
     });
     
     await task.save();
@@ -83,21 +125,37 @@ router.post('/', auth, adminOrMember, async (req, res) => {
 });
 
 // PUT /api/tasks/:id - обновить задачу
-router.put('/:id', auth, adminOrMemberTask, async (req, res) => {
+router.put('/:id', auth, adminOrMemberTask, upload.single('attachment'), async (req, res) => {
   try {
-    const task = await Task.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    )
-    .populate('assignee', 'login role')
-    .populate('project', 'title');
-    
-    console.log(req);
+    const task = await Task.findById(req.params.id);
+
     if (!task) {
       return res.status(404).json({ error: 'Задача не найдена' });
     }
-    
+
+    // Обновляем основные поля, если они переданы
+    const { title, description, status, assignee } = req.body;
+    if (title !== undefined) task.title = title;
+    if (description !== undefined) task.description = description;
+    if (status !== undefined) task.status = status;
+    if (assignee !== undefined && assignee !== '') task.assignee = assignee;
+
+    // Удаляем вложение
+    if (req.body.removeAttachment === 'true') {
+      deleteAttachmentFile(task.attachment);
+      task.attachment = undefined;
+    }
+
+    // Добавляем новое вложение
+    if (req.file) {
+      deleteAttachmentFile(task.attachment);
+      task.attachment = buildAttachment(req.file);
+    }
+
+    await task.save();
+    await task.populate('assignee', 'login role');
+    await task.populate('project', 'title');
+
     res.json(task);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -112,6 +170,9 @@ router.delete('/:id', auth, adminOrMemberTask, async (req, res) => {
     if (!task) {
       return res.status(404).json({ error: 'Задача не найдена' });
     }
+
+    // Удаляем вложение
+    deleteAttachmentFile(task.attachment);
     
     res.json({ message: 'Задача удалена', task });
   } catch (error) {

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { API_ROOT } from '../services/api';
 
 const normalizeParticipants = (participants) => {
   if (!Array.isArray(participants)) {
@@ -41,12 +42,20 @@ export const TaskEditForm = ({ task, onSubmit, onCancel, participants }) => {
   const [description, setDescription] = useState(task.description);
   const [assignee, setAssignee] = useState(initialAssigneeId);
   const [status, setStatus] = useState(task.status);
+  const [attachmentFile, setAttachmentFile] = useState(null);
+  const [removeAttachment, setRemoveAttachment] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     setTitle(task.title);
     setDescription(task.description);
     setStatus(task.status);
     setAssignee(initialAssigneeId);
+    setAttachmentFile(null);
+    setRemoveAttachment(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   }, [task, initialAssigneeId]);
 
   useEffect(() => {
@@ -66,9 +75,17 @@ export const TaskEditForm = ({ task, onSubmit, onCancel, participants }) => {
       title,
       description,
       assignee,
-      status
+      status,
+      attachmentFile,
+      removeAttachment
     });
   };
+
+  const currentAttachmentUrl = task.attachment?.url
+    ? (task.attachment.url.startsWith('http')
+        ? task.attachment.url
+        : `${API_ROOT}${task.attachment.url}`)
+    : null;
 
   return (
     <div className="card" style={{ minWidth: '140px' }}>
@@ -133,6 +150,71 @@ export const TaskEditForm = ({ task, onSubmit, onCancel, participants }) => {
               <option value="inProgress">In Progress</option>
               <option value="done">Done</option>
             </select>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Вложение</label>
+            {task.attachment && !removeAttachment && !attachmentFile && (
+              <div className="border rounded p-2 mb-2 d-flex flex-column gap-2">
+                <span className="text-muted small">Текущее вложение:</span>
+                {currentAttachmentUrl ? (
+                  <a
+                    href={currentAttachmentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-decoration-none"
+                  >
+                    {task.attachment.originalName ?? 'Скачать файл'}
+                  </a>
+                ) : (
+                  <span>{task.attachment.originalName ?? 'Файл'}</span>
+                )}
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-danger align-self-start"
+                  onClick={() => {
+                    setRemoveAttachment(true);
+                    setAttachmentFile(null);
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = '';
+                    }
+                  }}
+                >
+                  Удалить вложение
+                </button>
+              </div>
+            )}
+
+            {attachmentFile && (
+              <div className="border rounded p-2 mb-2 d-flex justify-content-between align-items-center">
+                <span className="small text-muted text-truncate me-3">{attachmentFile.name}</span>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-secondary"
+                  onClick={() => {
+                    setAttachmentFile(null);
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = '';
+                    }
+                  }}
+                >
+                  Очистить
+                </button>
+              </div>
+            )}
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="form-control"
+              onChange={(e) => {
+                const file = e.target.files?.[0] ?? null;
+                setAttachmentFile(file);
+                if (file) {
+                  setRemoveAttachment(false);
+                }
+              }}
+            />
           </div>
           
           <div className="d-flex flex-wrap gap-2">

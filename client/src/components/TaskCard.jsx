@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { TaskEditForm } from './TaskEditForm'
+import { API_ROOT } from '../services/api';
 
 export const TaskCard = ({ task, onEdit, onDelete, canManage = true, participants = [] }) => {
   const [isEditing, setIsEditing] = useState(false)
@@ -9,6 +10,12 @@ export const TaskCard = ({ task, onEdit, onDelete, canManage = true, participant
     if (typeof task.assignee === 'string') return task.assignee;
     return task.assignee.login || 'Неизвестный';
   };
+
+  const attachmentUrl = task.attachment?.url
+    ? (task.attachment.url.startsWith('http')
+        ? task.attachment.url
+        : `${API_ROOT}${task.attachment.url}`)
+    : null;
 
   const handleEdit = (updatedTask) => {
     setIsEditing(false);
@@ -38,6 +45,22 @@ export const TaskCard = ({ task, onEdit, onDelete, canManage = true, participant
         <p className="card-text">
           <small className="text-muted">Исполнитель: {getAssigneeName()}</small>
         </p>
+        {task.attachment && (
+          <p className="card-text small">
+            <small className="text-muted">Вложение: </small>
+            {attachmentUrl ? (
+              <a
+                href={attachmentUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {task.attachment.originalName ?? 'Скачать файл'}
+              </a>
+            ) : (
+              <span>{task.attachment.originalName ?? 'Файл'}</span>
+            )}
+          </p>
+        )}
 
         {canManage && (
           <div className="d-flex flex-wrap gap-2">

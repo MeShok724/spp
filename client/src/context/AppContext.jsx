@@ -221,12 +221,13 @@ export const AppProvider = ({ children }) => {
    // Tasks actions
   const addTask = async (taskData) => {
     try {
+      const payload = { ...taskData };
       const user = getCurrentUser();
-      if (!taskData.assignee && user?._id) {
-        taskData.assignee = user._id;
+      if (!payload.assignee && user?._id) {
+        payload.assignee = user._id;
       }
       dispatch({ type: 'SET_LOADING', payload: true });
-      const newTask = await tasksAPI.create(taskData);
+      const newTask = await tasksAPI.create(payload);
       if (newTask?.needLogin) {
         clearAuth();
         return newTask;
@@ -241,12 +242,13 @@ export const AppProvider = ({ children }) => {
 
   const updateTask = async (taskData) => {
     try {
+      const payload = { ...taskData };
       const user = getCurrentUser();
-      if (!taskData.assignee && user?._id) {
-        taskData.assignee = user._id;
+      if (!payload.assignee && user?._id) {
+        payload.assignee = user._id;
       }
       dispatch({ type: 'SET_LOADING', payload: true });
-      const updatedTask = await tasksAPI.update(taskData._id, taskData);
+      const updatedTask = await tasksAPI.update(payload._id, payload);
       if (updatedTask?.needLogin) {
         clearAuth();
         return updatedTask;

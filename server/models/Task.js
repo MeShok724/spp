@@ -23,6 +23,13 @@ const taskSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Project',
     required: true
+  },
+  attachment: {
+    filename: String,
+    originalName: String,
+    mimeType: String,
+    size: Number,
+    url: String
   }
 }, {
   timestamps: true
