@@ -1,5 +1,6 @@
 import { TaskCard } from "./TaskCard";
 
+// Компонент Kanban доски
 export const KanbanBoard = ({ tasks, onTaskMove, onEdit, onDelete, canManageTasks = true, participants = [] }) => {
   
   const todoTasks = tasks.filter(task => task.status === 'todo');
@@ -10,6 +11,7 @@ export const KanbanBoard = ({ tasks, onTaskMove, onEdit, onDelete, canManageTask
     <div>
       <h3>Kanban доска</h3>
       <div className="row">
+        
         {/* ToDo колонка */}
         <div className="col-md-4" style={{ minWidth: '180px' }}>
           <div className="card">

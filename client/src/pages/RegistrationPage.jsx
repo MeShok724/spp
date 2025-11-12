@@ -9,9 +9,10 @@ export const RegistrationPage = () => {
   const { syncAuthFromStorage } = useAppContext();
 
   const handleLogin = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Предотвращаем перезагрузку страницы
 
     try {
+      // Выполняем POST запрос на регистрацию
       const res = await fetch("http://localhost:5000/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

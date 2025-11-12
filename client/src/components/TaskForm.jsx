@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+// Функция для нормализации списка участников
 const normalizeParticipants = (participants) => {
   if (!Array.isArray(participants)) {
     return [];
@@ -22,12 +23,14 @@ const normalizeParticipants = (participants) => {
     .filter(Boolean);
 };
 
+// Компонент формы создания задачи
 export const TaskForm = ({ onSubmit, participants }) => {
   const normalizedParticipants = useMemo(
     () => normalizeParticipants(participants),
     [participants]
   );
 
+  // Состояние формы
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [assignee, setAssignee] = useState('');
@@ -35,6 +38,7 @@ export const TaskForm = ({ onSubmit, participants }) => {
   const [attachmentFile, setAttachmentFile] = useState(null);
   const fileInputRef = useRef(null);
 
+  // Установка исполнителя по умолчанию
   useEffect(() => {
     if (normalizedParticipants.length > 0 && !assignee) {
       setAssignee(normalizedParticipants[0]._id);
@@ -91,6 +95,7 @@ export const TaskForm = ({ onSubmit, participants }) => {
             />
           </div>
           
+          {/* Исполнитель */}
           <div className="mb-3">
             <label className="form-label">Исполнитель</label>
             {normalizedParticipants.length === 0 ? (

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useState, useCallback } from 'react';
 import { projectsAPI, tasksAPI, usersAPI } from '../services/api';
 
+// Создаем контекст для приложения
 const AppContext = createContext();
 
 const initialState = {
@@ -12,6 +13,7 @@ const initialState = {
   lastLoadedProjectParticipants: {},
 };
 
+// Редюсер для управления состоянием приложения
 const appReducer = (state, action) => {
   switch (action.type) {
     case 'SET_LOADING':
@@ -81,6 +83,7 @@ const appReducer = (state, action) => {
   }
 };
 
+// Функция для парсинга пользователя из localStorage
 const parseStoredUser = () => {
   const rawUser = localStorage.getItem('user');
 
@@ -101,6 +104,7 @@ export const AppProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem('accessToken'));
   const [currentUser, setCurrentUser] = useState(() => parseStoredUser());
 
+  // Очистка авторизации
   const clearAuth = useCallback(() => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
@@ -112,11 +116,13 @@ export const AppProvider = ({ children }) => {
     dispatch({ type: 'SET_USERS', payload: [] });
   }, [dispatch]);
 
+  // Синхронизация токенов и данных пользователя из localStorage
   const syncAuthFromStorage = useCallback(() => {
     setToken(localStorage.getItem('accessToken'));
     setCurrentUser(parseStoredUser());
   }, []);
 
+  // Загрузка начальных данных
   const loadInitialData = useCallback(async () => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
@@ -138,6 +144,7 @@ export const AppProvider = ({ children }) => {
     }
   }, [clearAuth, dispatch]);
 
+  // Загрузка списка пользователей
   const loadUsers = useCallback(async () => {
     try {
       const users = await usersAPI.getAll();
@@ -153,27 +160,33 @@ export const AppProvider = ({ children }) => {
     }
   }, [clearAuth, dispatch]);
 
+  // Синхронизация токенов и данных пользователя из localStorage
   useEffect(() => {
     const handleStorageChange = () => {
       syncAuthFromStorage();
     };
 
+    // Следим за изменениями в localStorage
     window.addEventListener('storage', handleStorageChange);
+    // Очищаем слушатель при размонтировании компонента
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [syncAuthFromStorage]);
 
+  // Загрузка начальных данных
   useEffect(() => {
     if (token) {
       loadInitialData();
     }
   }, [token, loadInitialData]);
 
+  // Загрузка списка пользователей
   useEffect(() => {
     if (token && currentUser?.role === 'admin') {
       loadUsers();
     }
   }, [token, currentUser, loadUsers]);
 
+  // Получение текущего пользователя
   const getCurrentUser = useCallback(() => {
     const user = currentUser ?? parseStoredUser();
     if (!currentUser && user) {
@@ -182,6 +195,7 @@ export const AppProvider = ({ children }) => {
     return user;
   }, [currentUser]);
 
+  // Создание проекта
   const addProject = async (projectData) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
@@ -200,6 +214,7 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  // Обновление проекта
   const updateProject = async (projectId, updates) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
@@ -218,7 +233,7 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-   // Tasks actions
+   // Создание задачи
   const addTask = async (taskData) => {
     try {
       const payload = { ...taskData };
@@ -240,6 +255,7 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  // Обновление задачи
   const updateTask = async (taskData) => {
     try {
       const payload = { ...taskData };
@@ -261,6 +277,7 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  // Удаление задачи
   const deleteTask = async (taskId) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
@@ -276,6 +293,7 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  // Обновление списка задач
   const refreshTasks = async () => {
     try {
       const tasks = await tasksAPI.getAll();
@@ -289,6 +307,7 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  // Значения для контекста
   const value = {
     ...state,
     currentUser,
@@ -304,6 +323,7 @@ export const AppProvider = ({ children }) => {
     logout: clearAuth,
   };
 
+  // Возвращаем контекст
   return (
     <AppContext.Provider value={value}>
       {children}
@@ -311,6 +331,7 @@ export const AppProvider = ({ children }) => {
   );
 };
 
+// Хук для использования контекста
 export const useAppContext = () => {
   const context = useContext(AppContext);
   if (!context) {

@@ -14,45 +14,42 @@ import tasksRouter from './routes/tasks.js';
 import authRouter from './routes/auth.js'
 import usersRouter from './routes/users.js';
 
+// Получаем путь к текущей директории
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Настройка middleware
+app.use(cors());              // Разрешаем CORS запросы
+app.use(express.json());      // Парсим JSON в теле запроса
 
+// Настройка статических файлов для раздачи загруженных файлов
 const uploadsDir = path.join(__dirname, 'uploads');
-fs.mkdirSync(uploadsDir, { recursive: true });
-app.use('/uploads', express.static(uploadsDir));
+fs.mkdirSync(uploadsDir, { recursive: true });  // Создаем директорию, если её нет
+app.use('/uploads', express.static(uploadsDir)); // Раздаем файлы по пути /uploads
 
-// Routes
+// Регистрация роутеров
 app.use('/api/projects', projectsRouter);
 app.use('/api/tasks', tasksRouter);
-app.use('/api/auth', authRouter)
+app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
 
-// Health check
+// Проверка работоспособности сервера
 app.get('/api/health', (req, res) => {
-  res.json({ message: 'Server is running!' });
+  res.json({ message: 'Сервер работает!' });
 });
 
-// Error handling
+// Обработка ошибок
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+  console.error('Ошибка сервера:', err.stack);
+  res.status(500).json({ error: 'Произошла ошибка на сервере!' });
 });
 
-// 404 handler
-// app.use('*', (req, res) => {
-//   res.status(404).json({ error: 'Route not found' });
-// });
-
-// Start server
+// Запуск сервера после подключения к базе данных
 connectDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`Сервер запущен на http://localhost:${PORT}`);
   });
 });

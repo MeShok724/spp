@@ -1,5 +1,6 @@
 import { ProjectCard } from "./ProjectCard"
 
+// Функция для получения количества задач проекта
 const getProjectTasksCount = (project, tasks) => {
 
   // Приоритет отдаём серверному значению, если оно определено
@@ -21,10 +22,10 @@ const getProjectTasksCount = (project, tasks) => {
     }
   }
   
-
   return count;
 };
 
+// Компонент списка проектов
 export const ProjectList = ({ projects, onProjectClick, tasks }) => {
   return (
     <div>

@@ -1,5 +1,5 @@
 import { Route, Routes } from 'react-router-dom'
-import { Menu } from '../components/menu.jsx'
+import { Menu } from '../components/Menu.jsx'
 import { RouteList } from './RouteList.jsx'
 
 export const AppRoutes = () => {

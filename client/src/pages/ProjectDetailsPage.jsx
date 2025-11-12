@@ -23,6 +23,7 @@ export const ProjectDetailsPage = () => {
   
   const project = projects.find(p => String(p._id) === String(id))
 
+  // Список ID участников проекта
   const participantIds = useMemo(() => {
     if (!project?.participants) {
       return [];
@@ -33,10 +34,12 @@ export const ProjectDetailsPage = () => {
       .filter(Boolean);
   }, [project]);
 
+  // Установка выбранных участников
   useEffect(() => {
     setSelectedParticipants(participantIds);
   }, [participantIds]);
 
+  // Загрузка списка пользователей
   useEffect(() => {
     if (currentUser?.role === 'admin' && (!users || users.length === 0)) {
       loadUsers();
@@ -48,9 +51,11 @@ export const ProjectDetailsPage = () => {
       Ошибка, проект не найден!
     </>
 
+  // Проверка прав пользователя на управление задачами
   const currentUserId = currentUser?._id;
   const canManageTasks = currentUser?.role === 'admin' || (currentUserId && participantIds.includes(currentUserId));
 
+  // Создание задачи
   const handleTaskCreate = (taskData) => {
     if (!canManageTasks) {
       return;
@@ -62,6 +67,7 @@ export const ProjectDetailsPage = () => {
     });
   };
 
+  // Переключение участника
   const handleParticipantToggle = (userId) => {
     setParticipantFeedback(null);
     setSelectedParticipants(prev => 
@@ -71,6 +77,7 @@ export const ProjectDetailsPage = () => {
     );
   };
 
+  // Сохранение списка участников
   const handleSaveParticipants = async () => {
     try {
       setIsSavingParticipants(true);
@@ -90,8 +97,10 @@ export const ProjectDetailsPage = () => {
     }
   };
 
+  // Список участников проекта
   const participants = Array.isArray(project.participants) ? project.participants : [];
 
+  // Нормализация списка участников
   const normalizedParticipants = useMemo(() => {
     return participants.map(participant => {
       if (!participant) {
@@ -123,6 +132,7 @@ export const ProjectDetailsPage = () => {
           />
         </div>
         <div className="col-md-4">
+          {/* Форма создания задачи */}
           {canManageTasks ? (
             <TaskForm onSubmit={handleTaskCreate} participants={normalizedParticipants} />
           ) : (
@@ -137,6 +147,7 @@ export const ProjectDetailsPage = () => {
         </div>
       </div>
 
+      {/* Список участников проекта */}
       <div className="mt-4">
         <h3>Участники</h3>
         {normalizedParticipants.length > 0 ? (
@@ -158,6 +169,7 @@ export const ProjectDetailsPage = () => {
           <p className="text-muted">Участники не назначены.</p>
         )}
 
+        {/* Управление участниками */}
         {currentUser?.role === 'admin' && (
           <div className="mt-3">
             <h5 className="mb-3">Управление участниками</h5>

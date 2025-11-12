@@ -9,15 +9,20 @@ import {auth, adminOrMember, adminOrMemberTask} from '../middleware/auth.js'
 
 const router = express.Router();
 
+// Получаем путь к текущей директории для работы с файлами
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Настройка директории для сохранения вложений задач
 const uploadDir = path.join(__dirname, '..', 'uploads', 'tasks');
 fs.mkdirSync(uploadDir, { recursive: true });
 
+// Настройка хранилища для загружаемых файлов
 const storage = multer.diskStorage({
   destination: (_, __, cb) => {
     cb(null, uploadDir);
   },
+  // Генерируем уникальное имя файла: timestamp + случайное число + расширение
   filename: (_, file, cb) => {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
     const ext = path.extname(file.originalname) || '';
@@ -25,8 +30,10 @@ const storage = multer.diskStorage({
   }
 });
 
+// Middleware для обработки загрузки файла
 const upload = multer({ storage });
 
+// Создает объект с информацией о вложении для сохранения в базе данных
 const buildAttachment = (file) => ({
   filename: file.filename,
   originalName: file.originalname,
@@ -35,6 +42,7 @@ const buildAttachment = (file) => ({
   url: `/uploads/tasks/${file.filename}`
 });
 
+// Удаляет файл вложения с диска
 const deleteAttachmentFile = (attachment) => {
   if (!attachment?.filename) {
     return;
@@ -49,16 +57,11 @@ const deleteAttachmentFile = (attachment) => {
 // GET /api/tasks - все задачи
 router.get('/', auth, async (req, res) => {
   try {
-    console.log('🔍 GET /api/tasks - запрос получен');
     const tasks = await Task.find()
       .populate('assignee', 'login role')
       .populate('project', 'title');
-    
-    // console.log('✅ Найдено задач:', tasks.length);
-    // console.log('📊 Задачи:', JSON.stringify(tasks, null, 2));
     res.json(tasks);
   } catch (error) {
-    console.error('❌ Ошибка в GET /api/tasks:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -97,6 +100,8 @@ router.get('/:id', auth, adminOrMemberTask, async (req, res) => {
 router.post('/', auth, upload.single('attachment'), adminOrMember, async (req, res) => {
   try {
     const { title, description, status, project, assignee } = req.body;
+    
+    // Если исполнитель не указан, назначаем текущего пользователя
     const assigneeId = assignee || req.user._id;
     
     // Проверяем существование проекта
@@ -133,14 +138,14 @@ router.put('/:id', auth, adminOrMemberTask, upload.single('attachment'), async (
       return res.status(404).json({ error: 'Задача не найдена' });
     }
 
-    // Обновляем основные поля, если они переданы
+    // Обновляем основные поля, если они переданы в запросе
     const { title, description, status, assignee } = req.body;
     if (title !== undefined) task.title = title;
     if (description !== undefined) task.description = description;
     if (status !== undefined) task.status = status;
     if (assignee !== undefined && assignee !== '') task.assignee = assignee;
 
-    // Удаляем вложение
+    // Удаляем существующее вложение, если запрошено
     if (req.body.removeAttachment === 'true') {
       deleteAttachmentFile(task.attachment);
       task.attachment = undefined;
@@ -171,7 +176,7 @@ router.delete('/:id', auth, adminOrMemberTask, async (req, res) => {
       return res.status(404).json({ error: 'Задача не найдена' });
     }
 
-    // Удаляем вложение
+    // Удаляем файл вложения с диска, если оно было
     deleteAttachmentFile(task.attachment);
     
     res.json({ message: 'Задача удалена', task });

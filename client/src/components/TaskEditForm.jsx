@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { API_ROOT } from '../services/api';
 
+// Функция для нормализации списка участников
 const normalizeParticipants = (participants) => {
   if (!Array.isArray(participants)) {
     return [];
@@ -23,6 +24,7 @@ const normalizeParticipants = (participants) => {
     .filter(Boolean);
 };
 
+// Компонент формы редактирования задачи
 export const TaskEditForm = ({ task, onSubmit, onCancel, participants }) => {
   const normalizedParticipants = useMemo(
     () => normalizeParticipants(participants),
@@ -38,6 +40,7 @@ export const TaskEditForm = ({ task, onSubmit, onCancel, participants }) => {
     return task.assignee._id ?? '';
   }, [task.assignee]);
 
+  // Состояние формы
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description);
   const [assignee, setAssignee] = useState(initialAssigneeId);
@@ -58,6 +61,7 @@ export const TaskEditForm = ({ task, onSubmit, onCancel, participants }) => {
     }
   }, [task, initialAssigneeId]);
 
+  // Установка исполнителя по умолчанию
   useEffect(() => {
     if (!assignee && normalizedParticipants.length > 0) {
       setAssignee(normalizedParticipants[0]._id);
@@ -81,6 +85,7 @@ export const TaskEditForm = ({ task, onSubmit, onCancel, participants }) => {
     });
   };
 
+  // Функция для получения URL вложения
   const currentAttachmentUrl = task.attachment?.url
     ? (task.attachment.url.startsWith('http')
         ? task.attachment.url
@@ -116,6 +121,8 @@ export const TaskEditForm = ({ task, onSubmit, onCancel, participants }) => {
           
           <div className="mb-3">
             <label className="form-label">Исполнитель</label>
+
+            {/* Список участников */}
             {normalizedParticipants.length === 0 ? (
               <input
                 type="text"
@@ -152,8 +159,11 @@ export const TaskEditForm = ({ task, onSubmit, onCancel, participants }) => {
             </select>
           </div>
 
+          {/* Вложение */}
           <div className="mb-3">
             <label className="form-label">Вложение</label>
+
+            {/* Текущее вложение */}
             {task.attachment && !removeAttachment && !attachmentFile && (
               <div className="border rounded p-2 mb-2 d-flex flex-column gap-2">
                 <span className="text-muted small">Текущее вложение:</span>
@@ -185,6 +195,7 @@ export const TaskEditForm = ({ task, onSubmit, onCancel, participants }) => {
               </div>
             )}
 
+            {/* Выбранный файл */}
             {attachmentFile && (
               <div className="border rounded p-2 mb-2 d-flex justify-content-between align-items-center">
                 <span className="small text-muted text-truncate me-3">{attachmentFile.name}</span>
@@ -203,6 +214,7 @@ export const TaskEditForm = ({ task, onSubmit, onCancel, participants }) => {
               </div>
             )}
 
+            {/* Выбор файла */}
             <input
               ref={fileInputRef}
               type="file"

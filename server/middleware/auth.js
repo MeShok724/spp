@@ -3,7 +3,7 @@ import { User } from '../models/User.js';
 import { Project } from '../models/Project.js';
 import { Task } from '../models/Task.js';
 
-// Генерация токенов
+// Генерирует пару токенов (access и refresh) для пользователя
 export const generateTokens = (payload) => {
   const accessToken = jwt.sign(
     payload,
@@ -20,7 +20,8 @@ export const generateTokens = (payload) => {
   return { accessToken, refreshToken };
 };
 
-// Верификация access токена
+// Middleware для проверки авторизации пользователя
+// Проверяет access token и добавляет информацию о пользователе в req.user
 export const auth = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -36,18 +37,19 @@ export const auth = async (req, res, next) => {
       return res.status(401).json({ error: 'Пользователь не найден' });
     }
 
+    // Добавляем информацию о пользователе в объект запроса
     req.user = user;
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Access token истек' });
     }
-    console.error('❌ Ошибка проверки access token:', error);
+    console.error('Ошибка проверки access token:', error);
     res.status(401).json({ error: 'Неверный access token' });
   }
 };
 
-// Верификация refresh токена
+// Проверяет refresh token и возвращает пользователя
 export const verifyRefreshToken = async (token) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET || 'refresh-secret');
@@ -63,6 +65,7 @@ export const verifyRefreshToken = async (token) => {
   }
 };
 
+// Middleware для проверки доступа: разрешает доступ администраторам и участникам проекта
 export const adminOrMember = async (req, res, next) => {
   try {
     if (!req.user) {
@@ -72,18 +75,19 @@ export const adminOrMember = async (req, res, next) => {
     const projectId = req.params.id || req.params.projectId || req.body.project;
     const userId = req.user._id;
 
-    // Если админ — пропускаем сразу
+    // Администраторы имеют доступ ко всем проектам
     if (req.user.role === 'admin') {
       return next();
     }
 
+    // Проверяем существование проекта
     const project = await Project.findById(projectId);
 
     if (!project) {
-      return res.status(404).json({ error: 'Проект не найден в middleware' });
+      return res.status(404).json({ error: 'Проект не найден' });
     }
 
-    // Проверяем, что пользователь — участник проекта
+    // Проверяем, является ли пользователь участником проекта
     const isMember = project.participants.some(p => p.equals(userId));
 
     if (!isMember) {
@@ -96,23 +100,25 @@ export const adminOrMember = async (req, res, next) => {
   }
 };
 
+// Middleware для проверки прав администратора
 export const isAdmin = async (req, res, next) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Требуется авторизация' });
     }
 
-    // Если админ — пропускаем сразу
+    // Проверяем, является ли пользователь администратором
     if (req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Нет доступа к проекту' });
+      return res.status(403).json({ error: 'Требуются права администратора' });
     }
     next();
   } catch (error) {
-    console.error('Ошибка проверки доступа isAdmin:', error);
+    console.error('Ошибка проверки прав администратора:', error);
     res.status(500).json({ error: 'Ошибка проверки доступа' });
   }
 }
 
+// Middleware для проверки доступа к задаче: разрешает доступ администраторам и участникам проекта задачи
 export const adminOrMemberTask = async (req, res, next) => {
   try {
     if (!req.user) {
@@ -122,7 +128,7 @@ export const adminOrMemberTask = async (req, res, next) => {
     const userId = req.user._id;
     const taskId = req.params.taskId || req.params.id;
 
-    // Если админ — пропускаем сразу
+    // Администраторы имеют доступ ко всем задачам
     if (req.user.role === 'admin') {
       return next();
     }
@@ -131,6 +137,8 @@ export const adminOrMemberTask = async (req, res, next) => {
     if (!task) {
       return res.status(404).json({ error: 'Задача не найдена' });
     }
+    
+    // Получаем проект, к которому относится задача
     const projectId = task.project;
     const project = await Project.findById(projectId);
 
@@ -146,7 +154,7 @@ export const adminOrMemberTask = async (req, res, next) => {
     }
     next();
   } catch (error) {
-    console.error('Ошибка проверки доступа к проекту:', error);
+    console.error('Ошибка проверки доступа к задаче:', error);
     res.status(500).json({ error: 'Ошибка проверки доступа' });
   }
 };

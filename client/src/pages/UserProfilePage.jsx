@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
+// Функция для форматирования даты
 const formatDate = (dateString) => {
   if (!dateString) {
     return "—";
@@ -19,6 +20,8 @@ const formatDate = (dateString) => {
 
 export function UserProfilePage(){
   const [user, setUser] = useState(null);
+  
+  // Форматированный пользователь
   const formattedUser = useMemo(() => {
     if (!user) {
       return null;

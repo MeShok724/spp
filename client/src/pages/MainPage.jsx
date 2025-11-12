@@ -12,6 +12,7 @@ export function MainPage(){
         navigate(`/projects/${project._id}`);
     };
 
+    // Список проектов пользователя
     const userProjects = useMemo(() => {
       if (!currentUser) {
         return [];
@@ -21,6 +22,7 @@ export function MainPage(){
         return projects;
       }
 
+      // Фильтруем проекты по участникам
       return projects.filter(project => {
         if (!Array.isArray(project.participants)) {
           return false;
@@ -34,10 +36,12 @@ export function MainPage(){
       });
     }, [projects, currentUser]);
 
+    // Список ID проектов пользователя
     const userProjectIds = useMemo(() => {
       return new Set(userProjects.map(project => String(project._id)));
     }, [userProjects]);
 
+    // Список задач пользователя
     const userTasks = useMemo(() => {
       return tasks.filter(task => {
         const projectId = typeof task.project === 'object' ? task.project?._id : task.project;

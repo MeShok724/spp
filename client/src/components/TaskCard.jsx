@@ -2,15 +2,18 @@ import { useState } from "react";
 import { TaskEditForm } from './TaskEditForm'
 import { API_ROOT } from '../services/api';
 
+// Компонент карточки задачи
 export const TaskCard = ({ task, onEdit, onDelete, canManage = true, participants = [] }) => {
   const [isEditing, setIsEditing] = useState(false)
 
+  // Функция для получения имени исполнителя
   const getAssigneeName = () => {
     if (!task.assignee) return 'Не назначен';
     if (typeof task.assignee === 'string') return task.assignee;
     return task.assignee.login || 'Неизвестный';
   };
 
+  // Функция для получения URL вложения
   const attachmentUrl = task.attachment?.url
     ? (task.attachment.url.startsWith('http')
         ? task.attachment.url
@@ -45,6 +48,8 @@ export const TaskCard = ({ task, onEdit, onDelete, canManage = true, participant
         <p className="card-text">
           <small className="text-muted">Исполнитель: {getAssigneeName()}</small>
         </p>
+
+        {/* Вложение */}
         {task.attachment && (
           <p className="card-text small">
             <small className="text-muted">Вложение: </small>
@@ -62,6 +67,7 @@ export const TaskCard = ({ task, onEdit, onDelete, canManage = true, participant
           </p>
         )}
 
+        {/* Кнопки редактирования и удаления */}
         {canManage && (
           <div className="d-flex flex-wrap gap-2">
             {onEdit && (

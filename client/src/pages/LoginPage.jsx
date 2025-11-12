@@ -9,9 +9,10 @@ export const LoginPage = () => {
   const { syncAuthFromStorage } = useAppContext();
 
   const handleLogin = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Предотвращаем перезагрузку страницы
 
     try {
+      // Выполняем POST запрос на авторизацию
       const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -22,7 +23,7 @@ export const LoginPage = () => {
 
       if (!res.ok) throw new Error(data.error || "Ошибка входа");
 
-      // сохраняем токены и данные пользователя
+      // Сохраняем токены и данные пользователя
       localStorage.setItem("accessToken", data.tokens.accessToken);
       localStorage.setItem("refreshToken", data.tokens.refreshToken);
       localStorage.setItem("user", JSON.stringify(data.user));
